@@ -1,0 +1,64 @@
+version: "3.3"
+
+services:
+    proxy:
+        image: "jwilder/nginx-proxy"
+        container_name: "proxy"
+        volumes:
+            - "certs:/etc/nginx/certs"
+            - "vhost:/etc/nginx/vhost.d"
+            - "html:/usr/share/nginx/html"
+            - "/run/docker.sock:/tmp/docker.sock:ro"
+        networks: ["server"]
+        restart: "always"
+        ports:
+            - "80:80"
+            - "443:443"
+    postgres:
+        image: postgres:9.6.4
+        restart: unless-stopped
+        networks:
+            - default
+        volumes:
+            - /opt/matrix/pgdata:/var/lib/postgresql/data
+        environment:
+            - POSTGRES_PASSWORD=SECRET
+            - POSTGRES_USER=synapse
+
+
+    letsencrypt:
+        image: "jrcs/letsencrypt-nginx-proxy-companion"
+        container_name: "letsencrypt"
+        volumes:
+            - "certs:/etc/nginx/certs"
+            - "vhost:/etc/nginx/vhost.d"
+            - "html:/usr/share/nginx/html"
+            - "/run/docker.sock:/var/run/docker.sock:ro"
+        environment:
+            NGINX_PROXY_CONTAINER: "proxy"
+        networks: ["server"]
+        restart: "always"
+        depends_on: ["proxy"]
+
+    synapse:
+        image: "matrixdotorg/synapse:latest"
+        container_name: "synapse"
+        volumes:
+            - "./data:/data"
+        environment:
+            VIRTUAL_HOST: "synapse.nick.net"
+            VIRTUAL_PORT: 8008
+            LETSENCRYPT_HOST: "synapse.nick.net"
+            SYNAPSE_SERVER_NAME: "synapse.nick.net"
+            SYNAPSE_REPORT_STATS: "yes"
+        networks: ["server"]
+
+
+networks:
+    server:
+        external: true
+
+volumes:
+    certs:
+    vhost:
+    html:
