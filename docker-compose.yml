@@ -22,8 +22,8 @@ services:
         volumes:
             - /opt/matrix/pgdata:/var/lib/postgresql/data
         environment:
-            - POSTGRES_PASSWORD=SECRET
-            - POSTGRES_USER=synapse
+            - POSTGRES_PASSWORD=<redacted>
+            - POSTGRES_USER=<redacted>
 
 
     letsencrypt:
@@ -34,6 +34,7 @@ services:
             - "vhost:/etc/nginx/vhost.d"
             - "html:/usr/share/nginx/html"
             - "/run/docker.sock:/var/run/docker.sock:ro"
+            - "/etc/acme.sh"
         environment:
             NGINX_PROXY_CONTAINER: "proxy"
         networks: ["server"]
@@ -46,10 +47,10 @@ services:
         volumes:
             - "./data:/data"
         environment:
-            VIRTUAL_HOST: "synapse.nick.net"
+            VIRTUAL_HOST: <redacted>
             VIRTUAL_PORT: 8008
-            LETSENCRYPT_HOST: "synapse.nick.net"
-            SYNAPSE_SERVER_NAME: "synapse.nick.net"
+            LETSENCRYPT_HOST: <redacted>
+            SYNAPSE_SERVER_NAME: <redacted>
             SYNAPSE_REPORT_STATS: "yes"
         networks: ["server"]
 
